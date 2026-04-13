@@ -1,0 +1,1207 @@
+import { useState, useEffect, useRef } from 'react'
+import { Routes, Route, Link } from 'react-router-dom'
+import './App.css'
+
+function PageHeader({ title, status, lastReceived, elapsedSeconds, retryTimeout, retryCount, onReconnect }) {
+  const statusColor =
+    status === 'connected'
+      ? '#22c55e'
+      : status === 'error'
+      ? '#ef4444'
+      : status === 'closed'
+      ? '#6b7280'
+      : '#f59e0b'
+
+  return (
+    <div style={{ 
+      marginBottom: 24,
+      padding: '16px 20px',
+      background: '#f9fafb',
+      borderRadius: 8,
+      border: '1px solid #e5e7eb'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+        <Link to="/">
+          <button style={{ 
+            padding: '6px 12px',
+            fontSize: 14,
+            background: '#fff',
+            border: '1px solid #d1d5db',
+            borderRadius: 4,
+            cursor: 'pointer'
+          }}>
+            ← Home
+          </button>
+        </Link>
+        
+        <h2 style={{ margin: 0, fontSize: 20, color: '#111' }}>{title}</h2>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 14, fontWeight: 'bold', color: '#555' }}>Status:</span>
+          <span
+            aria-hidden="true"
+            style={{ width: 10, height: 10, borderRadius: 10, background: statusColor }}
+          />
+          <span style={{ fontSize: 14, color: '#666' }}>{status}</span>
+        </div>
+        
+        {lastReceived && (
+          <div style={{ fontSize: 14, color: '#666' }}>
+            Last: {new Date(lastReceived).toLocaleTimeString()} ({elapsedSeconds ?? 0}s ago)
+          </div>
+        )}
+        
+        {(status === 'closed' || status === 'error') && retryTimeout && (
+          <div style={{ fontSize: 14, color: '#f59e0b' }}>
+            Retry in {Math.ceil(retryTimeout / 1000)}s (#{retryCount + 1})
+          </div>
+        )}
+        
+        <button 
+          onClick={onReconnect}
+          style={{ 
+            padding: '6px 12px',
+            fontSize: 14,
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+            marginLeft: 'auto'
+          }}
+        >
+          Reconnect
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function PageFooter() {
+  return (
+    <footer style={{ 
+      marginTop: 60, 
+      paddingTop: 20, 
+      borderTop: '1px solid #e5e7eb',
+      textAlign: 'center',
+      color: '#9ca3af',
+      fontSize: 14
+    }}>
+      <p style={{ margin: 0 }}>Multi-Account Algo Trading Dashboard</p>
+      <p style={{ margin: '8px 0 0 0' }}>© {new Date().getFullYear()}</p>
+    </footer>
+  )
+}
+
+function Home({ count, onIncrement }) {
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <div className="home" style={{ maxWidth: 800, margin: '0 auto', padding: 40, position: 'relative' }}>
+      <div style={{ 
+        position: 'absolute', 
+        top: 20, 
+        right: 20, 
+        fontSize: 18, 
+        color: '#666', 
+        fontFamily: 'monospace',
+        background: '#f3f4f6',
+        padding: '8px 16px',
+        borderRadius: 6,
+        border: '1px solid #e5e7eb'
+      }}>
+        {currentTime.toLocaleTimeString()}
+      </div>
+      <h1 style={{ marginBottom: 40, fontSize: 32 }}>Trading Dashboard</h1>
+      
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 20, marginBottom: 16, color: '#333' }}>Monitor</h2>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link to="/application_state">
+            <button style={{ 
+              padding: '12px 24px', 
+              fontSize: 16,
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}>
+              Application State
+            </button>
+          </Link>
+          <Link to="/application_state_details">
+            <button style={{ 
+              padding: '12px 24px', 
+              fontSize: 16,
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}>
+              Application State Details
+            </button>
+          </Link>
+          <Link to="/application_config">
+            <button style={{ 
+              padding: '12px 24px', 
+              fontSize: 16,
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}>
+              Application Config
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 20, marginBottom: 16, color: '#333' }}>Trading</h2>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link to="/open_positions">
+            <button style={{ 
+              padding: '12px 24px', 
+              fontSize: 16,
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}>
+              Open Positions
+            </button>
+          </Link>
+          <Link to="/account_summary">
+            <button style={{ 
+              padding: '12px 24px', 
+              fontSize: 16,
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}>
+              Account Summary
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      <footer style={{ 
+        marginTop: 80, 
+        paddingTop: 20, 
+        borderTop: '1px solid #e5e7eb',
+        textAlign: 'center',
+        color: '#9ca3af',
+        fontSize: 14
+      }}>
+        <p style={{ margin: 0 }}>Multi-Account Algo Trading Dashboard</p>
+        <p style={{ margin: '8px 0 0 0' }}>© {new Date().getFullYear()}</p>
+      </footer>
+    </div>
+  )
+}
+
+function WebSocketPage({ title, messageType, state }) {
+  const [wsData, setWsData] = useState(null)
+  const [status, setStatus] = useState('disconnected')
+  const [lastReceived, setLastReceived] = useState(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [retryTimeout, setRetryTimeout] = useState(null)
+  const wsRef = useRef(null)
+  const retryTimeoutRef = useRef(null)
+
+  const connectWs = () => {
+    // clear any pending retry
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+      setRetryTimeout(null)
+    }
+
+    let mounted = true
+    try {
+      const ws = new WebSocket('ws://127.0.0.1:6106')
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        if (!mounted) return
+        setStatus('connected')
+        setRetryCount(0)
+      }
+
+      ws.onmessage = (ev) => {
+        if (!mounted) return
+        const raw = ev.data
+        // try parse JSON, otherwise skip
+        try {
+          const parsed = JSON.parse(raw)
+          // only show messages with specified type
+          if (parsed.type === messageType) {
+            setLastReceived(Date.now())
+            setWsData(parsed)
+          }
+        } catch (e) {
+          // ignore non-JSON messages
+        }
+      }
+
+      ws.onerror = (err) => {
+        if (!mounted) return
+        setStatus('error')
+        console.error('WebSocket error', err)
+      }
+
+      ws.onclose = () => {
+        if (!mounted) return
+        setStatus('closed')
+        // schedule retry with exponential backoff (1s, 2s, 4s, 8s, ... max 30s)
+        const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+        setRetryTimeout(nextRetry)
+        retryTimeoutRef.current = setTimeout(() => {
+          if (mounted) {
+            setRetryCount((c) => c + 1)
+            connectWs()
+          }
+        }, nextRetry)
+      }
+    } catch (err) {
+      setStatus('error')
+      console.error('WebSocket failed to construct', err)
+      // retry on construction error too
+      const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+      setRetryTimeout(nextRetry)
+      retryTimeoutRef.current = setTimeout(() => {
+        if (mounted) {
+          setRetryCount((c) => c + 1)
+          connectWs()
+        }
+      }, nextRetry)
+    }
+
+    return () => {
+      mounted = false
+    }
+  }
+
+  useEffect(() => {
+    connectWs()
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
+      try {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close()
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [])
+
+  // update elapsed seconds since last message
+  useEffect(() => {
+    if (!lastReceived) {
+      setElapsedSeconds(null)
+      return
+    }
+    // set initial
+    setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    const id = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lastReceived])
+
+  return (
+    <div className="state-page">
+      <PageHeader 
+        title={title}
+        status={status}
+        lastReceived={lastReceived}
+        elapsedSeconds={elapsedSeconds}
+        retryTimeout={retryTimeout}
+        retryCount={retryCount}
+        onReconnect={() => {
+          setRetryCount(0)
+          connectWs()
+        }}
+      />
+      <div style={{whiteSpace: 'pre-wrap', background: '#f6f8fa', padding: 12, borderRadius: 6}}>
+        {wsData ? (
+          typeof wsData === 'string' ? (
+            <div>
+              <strong>Raw message:</strong>
+              <pre>{wsData}</pre>
+            </div>
+          ) : (
+            <div>
+              <strong>JSON message:</strong>
+              <pre style={{ textAlign: 'left' }}>{JSON.stringify(wsData, null, 2)}</pre>
+            </div>
+          )
+        ) : (
+          <div>No messages received yet.</div>
+        )}
+      </div>
+
+      <Link to="/">
+        <button>Back</button>
+      </Link>
+      
+      <PageFooter />
+    </div>
+  )
+}
+
+function OpenPositionsPage({ state }) {
+  const [wsData, setWsData] = useState(null)
+  const [status, setStatus] = useState('disconnected')
+  const [lastReceived, setLastReceived] = useState(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [retryTimeout, setRetryTimeout] = useState(null)
+  const wsRef = useRef(null)
+  const retryTimeoutRef = useRef(null)
+
+  const connectWs = () => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+      setRetryTimeout(null)
+    }
+
+    let mounted = true
+    try {
+      const ws = new WebSocket('ws://127.0.0.1:6106')
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        if (!mounted) return
+        setStatus('connected')
+        setRetryCount(0)
+      }
+
+      ws.onmessage = (ev) => {
+        if (!mounted) return
+        const raw = ev.data
+        try {
+          const parsed = JSON.parse(raw)
+          // capture application_state messages which contain ib_positions
+          if (parsed.type === 'application_state') {
+            console.log('Received application_state:', parsed)
+            console.log('ib_positions:', parsed['ib_positions'])
+            setLastReceived(Date.now())
+            setWsData(parsed)
+          }
+        } catch (e) {
+          // ignore non-JSON messages
+        }
+      }
+
+      ws.onerror = (err) => {
+        if (!mounted) return
+        setStatus('error')
+        console.error('WebSocket error', err)
+      }
+
+      ws.onclose = () => {
+        if (!mounted) return
+        setStatus('closed')
+        const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+        setRetryTimeout(nextRetry)
+        retryTimeoutRef.current = setTimeout(() => {
+          if (mounted) {
+            setRetryCount((c) => c + 1)
+            connectWs()
+          }
+        }, nextRetry)
+      }
+    } catch (err) {
+      setStatus('error')
+      console.error('WebSocket failed to construct', err)
+      const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+      setRetryTimeout(nextRetry)
+      retryTimeoutRef.current = setTimeout(() => {
+        if (mounted) {
+          setRetryCount((c) => c + 1)
+          connectWs()
+        }
+      }, nextRetry)
+    }
+
+    return () => {
+      mounted = false
+    }
+  }
+
+  useEffect(() => {
+    connectWs()
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
+      try {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close()
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!lastReceived) {
+      setElapsedSeconds(null)
+      return
+    }
+    setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    const id = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lastReceived])
+
+  const statusColor =
+    status === 'connected'
+      ? '#22c55e'
+      : status === 'error'
+      ? '#ef4444'
+      : status === 'closed'
+      ? '#6b7280'
+      : '#f59e0b'
+
+  const positions = wsData?.data?.['ib_positions'] || wsData?.['ib_positions'] || []
+  const [quantities, setQuantities] = useState({})
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
+  
+  // Initialize quantities with default values from positions
+  useEffect(() => {
+    if (Array.isArray(positions) && positions.length > 0) {
+      const defaultQties = {}
+      positions.forEach((pos, idx) => {
+        if (!quantities[idx]) {
+          defaultQties[idx] = Math.abs(pos.abs_qty || pos.quantity || pos.position || 0)
+        }
+      })
+      setQuantities((prev) => ({ ...prev, ...defaultQties }))
+    }
+  }, [positions])
+
+  // Sort positions based on sortConfig
+  const sortedPositions = [...positions].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    
+    const aVal = a[sortConfig.key]
+    const bVal = b[sortConfig.key]
+    
+    // Handle null/undefined
+    if (aVal == null && bVal == null) return 0
+    if (aVal == null) return 1
+    if (bVal == null) return -1
+    
+    // Compare numbers
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal
+    }
+    
+    // Compare strings
+    const aStr = String(aVal).toLowerCase()
+    const bStr = String(bVal).toLowerCase()
+    
+    if (aStr < bStr) return sortConfig.direction === 'asc' ? -1 : 1
+    if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+
+  return (
+    <div className="state-page">
+      <PageHeader 
+        title="Open Positions"
+        status={status}
+        lastReceived={lastReceived}
+        elapsedSeconds={elapsedSeconds}
+        retryTimeout={retryTimeout}
+        retryCount={retryCount}
+        onReconnect={() => {
+          setRetryCount(0)
+          connectWs()
+        }}
+      />
+      
+      <div style={{ marginBottom: 16 }}>
+        <button 
+          onClick={() => {
+            const confirmed = window.confirm(
+              'Close ALL open positions?\n\nThis will send a close request for all positions. Click Yes to confirm or No to cancel.'
+            )
+            
+            if (!confirmed) {
+              return
+            }
+            
+            const closeAllOrder = {
+              request_type: 'close_all_positions',
+              web_request_id: `close_all_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            }
+            console.log('Sending close all order:', closeAllOrder)
+            
+            fetch('http://127.0.0.1:5106/api/send-request', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(closeAllOrder),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log('Response:', data)
+                alert('Close all positions request sent')
+              })
+              .catch((err) => {
+                console.error('Error:', err)
+                alert(`Error sending close all request: ${err.message}`)
+              })
+          }}
+          style={{
+            padding: '8px 16px',
+            background: '#dc2626',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontWeight: 'bold'
+          }}
+        >
+          Close All Open Positions
+        </button>
+      </div>
+
+      {Array.isArray(positions) && positions.length > 0 ? (
+        <div style={{ marginBottom: 20 }}>
+          <h3>IB Positions</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16, background: '#fff', border: '1px solid #ddd' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ccc', background: '#f5f5f5' }}>
+                {positions.length > 0 && Object.keys(positions[0]).map((key) => (
+                  <th 
+                    key={key} 
+                    onClick={() => handleSort(key)}
+                    style={{ 
+                      padding: 10, 
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      position: 'relative'
+                    }}
+                  >
+                    {key}
+                    {sortConfig.key === key && (
+                      <span style={{ marginLeft: 6 }}>
+                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </th>
+                ))}
+                <th style={{ padding: 10, textAlign: 'center' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedPositions.map((pos, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                  {Object.entries(pos).map(([key, value]) => (
+                    <td key={key} style={{ padding: 10 }}>
+                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                    </td>
+                  ))}
+                  <td style={{ padding: 10, textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={quantities[idx] || ''}
+                        onChange={(e) => setQuantities({ ...quantities, [idx]: e.target.value })}
+                        style={{
+                          width: 80,
+                          padding: '6px 8px',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          const qty = quantities[idx] || pos.quantity || pos.position
+                          if (!qty) {
+                            alert('Please enter a quantity')
+                            return
+                          }
+                          
+                          const confirmed = window.confirm(
+                            `Close ${pos.symbol || pos.contract} with quantity ${qty}?\n\nClick Yes to confirm or No to cancel.`
+                          )
+                          
+                          if (!confirmed) {
+                            return
+                          }
+                          
+                          const closeOrder = {
+                            request_type: 'close_position',
+                            symbol: pos.symbol || pos.contract,
+                            quantity: parseFloat(qty),
+                            web_request_id: `close_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                          }
+                          console.log('Sending close order:', closeOrder)
+                          
+                          fetch('http://127.0.0.1:5106/api/send-request', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(closeOrder),
+                          })
+                            .then((res) => res.json())
+                            .then((data) => {
+                              console.log('Response:', data)
+                              alert(`Close order sent for ${closeOrder.symbol} (qty: ${closeOrder.quantity})`)
+                            })
+                            .catch((err) => {
+                              console.error('Error:', err)
+                              alert(`Error sending close order: ${err.message}`)
+                            })
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: 4,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ color: '#666' }}>No positions available</p>
+          {wsData && (
+            <details style={{ marginTop: 10, background: '#f6f8fa', padding: 12, borderRadius: 6 }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Debug: View raw data</summary>
+              <pre style={{ marginTop: 10, fontSize: 12 }}>{JSON.stringify(wsData, null, 2)}</pre>
+            </details>
+          )}
+        </div>
+      )}
+
+      <Link to="/">
+        <button>Back</button>
+      </Link>
+      
+      <PageFooter />
+    </div>
+  )
+}
+
+function AccountSummaryPage({ state }) {
+  const [wsData, setWsData] = useState(null)
+  const [status, setStatus] = useState('disconnected')
+  const [lastReceived, setLastReceived] = useState(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [retryTimeout, setRetryTimeout] = useState(null)
+  const wsRef = useRef(null)
+  const retryTimeoutRef = useRef(null)
+
+  const connectWs = () => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+      setRetryTimeout(null)
+    }
+
+    let mounted = true
+    try {
+      const ws = new WebSocket('ws://127.0.0.1:6106')
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        if (!mounted) return
+        setStatus('connected')
+        setRetryCount(0)
+      }
+
+      ws.onmessage = (ev) => {
+        if (!mounted) return
+        const raw = ev.data
+        try {
+          const parsed = JSON.parse(raw)
+          if (parsed.type === 'application_state') {
+            setLastReceived(Date.now())
+            setWsData(parsed)
+          }
+        } catch (e) {
+          // ignore non-JSON messages
+        }
+      }
+
+      ws.onerror = (err) => {
+        if (!mounted) return
+        setStatus('error')
+        console.error('WebSocket error', err)
+      }
+
+      ws.onclose = () => {
+        if (!mounted) return
+        setStatus('closed')
+        const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+        setRetryTimeout(nextRetry)
+        retryTimeoutRef.current = setTimeout(() => {
+          if (mounted) {
+            setRetryCount((c) => c + 1)
+            connectWs()
+          }
+        }, nextRetry)
+      }
+    } catch (err) {
+      setStatus('error')
+      console.error('WebSocket failed to construct', err)
+      const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+      setRetryTimeout(nextRetry)
+      retryTimeoutRef.current = setTimeout(() => {
+        if (mounted) {
+          setRetryCount((c) => c + 1)
+          connectWs()
+        }
+      }, nextRetry)
+    }
+
+    return () => {
+      mounted = false
+    }
+  }
+
+  useEffect(() => {
+    connectWs()
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
+      try {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close()
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!lastReceived) {
+      setElapsedSeconds(null)
+      return
+    }
+    setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    const id = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lastReceived])
+
+  const statusColor =
+    status === 'connected'
+      ? '#22c55e'
+      : status === 'error'
+      ? '#ef4444'
+      : status === 'closed'
+      ? '#6b7280'
+      : '#f59e0b'
+
+  const accountInfo = wsData?.data?.['account_info'] || wsData?.['account_info'] || null
+  const [sortConfig, setSortConfig] = useState({ key: 'field', direction: 'asc' })
+
+  const handleSort = (column) => {
+    setSortConfig((prev) => ({
+      key: column,
+      direction: prev.key === column && prev.direction === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+
+  const sortedEntries = accountInfo ? Object.entries(accountInfo).sort((a, b) => {
+    if (sortConfig.key === 'field') {
+      const aStr = a[0].toLowerCase()
+      const bStr = b[0].toLowerCase()
+      if (aStr < bStr) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    } else {
+      // Sort by value
+      const aVal = a[1]
+      const bVal = b[1]
+      
+      if (aVal == null && bVal == null) return 0
+      if (aVal == null) return 1
+      if (bVal == null) return -1
+      
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal
+      }
+      
+      const aStr = String(aVal).toLowerCase()
+      const bStr = String(bVal).toLowerCase()
+      
+      if (aStr < bStr) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    }
+  }) : []
+
+  return (
+    <div className="state-page">
+      <PageHeader 
+        title="Account Summary"
+        status={status}
+        lastReceived={lastReceived}
+        elapsedSeconds={elapsedSeconds}
+        retryTimeout={retryTimeout}
+        retryCount={retryCount}
+        onReconnect={() => {
+          setRetryCount(0)
+          connectWs()
+        }}
+      />
+
+      {accountInfo ? (
+        <div style={{ marginBottom: 20 }}>
+          <h3>Account Information</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16, background: '#fff', border: '1px solid #ddd' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #ccc', background: '#f5f5f5' }}>
+                <th 
+                  onClick={() => handleSort('field')}
+                  style={{ 
+                    padding: 10, 
+                    textAlign: 'left', 
+                    width: '30%',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  Field
+                  {sortConfig.key === 'field' && (
+                    <span style={{ marginLeft: 6 }}>
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th 
+                  onClick={() => handleSort('value')}
+                  style={{ 
+                    padding: 10, 
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  Value
+                  {sortConfig.key === 'value' && (
+                    <span style={{ marginLeft: 6 }}>
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedEntries.map(([key, value]) => (
+                <tr key={key} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: 10, fontWeight: 'bold', color: '#555' }}>{key}</td>
+                  <td style={{ padding: 10 }}>
+                    {typeof value === 'object' && value !== null ? (
+                      <pre style={{ margin: 0, fontSize: 14 }}>{JSON.stringify(value, null, 2)}</pre>
+                    ) : typeof value === 'number' ? (
+                      value.toLocaleString('en-US', { maximumFractionDigits: 2 })
+                    ) : (
+                      String(value)
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ color: '#666' }}>No account information available</p>
+          {wsData && (
+            <details style={{ marginTop: 10, background: '#f6f8fa', padding: 12, borderRadius: 6 }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Debug: View raw data</summary>
+              <pre style={{ marginTop: 10, fontSize: 12 }}>{JSON.stringify(wsData, null, 2)}</pre>
+            </details>
+          )}
+        </div>
+      )}
+
+      <Link to="/">
+        <button>Back</button>
+      </Link>
+      
+      <PageFooter />
+    </div>
+  )
+}
+
+function ApplicationStateDetailsPage({ state }) {
+  const [wsData, setWsData] = useState(null)
+  const [status, setStatus] = useState('disconnected')
+  const [lastReceived, setLastReceived] = useState(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [retryTimeout, setRetryTimeout] = useState(null)
+  const wsRef = useRef(null)
+  const retryTimeoutRef = useRef(null)
+
+  const connectWs = () => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+      setRetryTimeout(null)
+    }
+
+    let mounted = true
+    try {
+      const ws = new WebSocket('ws://127.0.0.1:6106')
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        if (!mounted) return
+        setStatus('connected')
+        setRetryCount(0)
+      }
+
+      ws.onmessage = (ev) => {
+        if (!mounted) return
+        const raw = ev.data
+        try {
+          const parsed = JSON.parse(raw)
+          if (parsed.type === 'application_state') {
+            setLastReceived(Date.now())
+            setWsData(parsed)
+          }
+        } catch (e) {
+          // ignore non-JSON messages
+        }
+      }
+
+      ws.onerror = (err) => {
+        if (!mounted) return
+        setStatus('error')
+        console.error('WebSocket error', err)
+      }
+
+      ws.onclose = () => {
+        if (!mounted) return
+        setStatus('closed')
+        const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+        setRetryTimeout(nextRetry)
+        retryTimeoutRef.current = setTimeout(() => {
+          if (mounted) {
+            setRetryCount((c) => c + 1)
+            connectWs()
+          }
+        }, nextRetry)
+      }
+    } catch (err) {
+      setStatus('error')
+      console.error('WebSocket failed to construct', err)
+      const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 30000)
+      setRetryTimeout(nextRetry)
+      retryTimeoutRef.current = setTimeout(() => {
+        if (mounted) {
+          setRetryCount((c) => c + 1)
+          connectWs()
+        }
+      }, nextRetry)
+    }
+
+    return () => {
+      mounted = false
+    }
+  }
+
+  useEffect(() => {
+    connectWs()
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
+      try {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close()
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!lastReceived) {
+      setElapsedSeconds(null)
+      return
+    }
+    setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    const id = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - lastReceived) / 1000))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lastReceived])
+
+  const statusColor =
+    status === 'connected'
+      ? '#22c55e'
+      : status === 'error'
+      ? '#ef4444'
+      : status === 'closed'
+      ? '#6b7280'
+      : '#f59e0b'
+
+  const dataObj = wsData?.data || {}
+
+  // Function to check if value is an array of objects
+  const isArrayOfObjects = (value) => {
+    return Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null
+  }
+
+  return (
+    <div className="state-page">
+      <PageHeader 
+        title="Application State Details"
+        status={status}
+        lastReceived={lastReceived}
+        elapsedSeconds={elapsedSeconds}
+        retryTimeout={retryTimeout}
+        retryCount={retryCount}
+        onReconnect={() => {
+          setRetryCount(0)
+          connectWs()
+        }}
+      />
+
+      {Object.keys(dataObj).length > 0 ? (
+        <div>
+          {Object.entries(dataObj).map(([key, value]) => (
+            <div key={key} style={{ marginBottom: 30 }}>
+              <h3 style={{ marginBottom: 12, color: '#333' }}>{key}</h3>
+              {isArrayOfObjects(value) ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16, background: '#fff', border: '1px solid #ddd' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #ccc', background: '#f5f5f5' }}>
+                      {Object.keys(value[0]).map((colKey) => (
+                        <th key={colKey} style={{ padding: 10, textAlign: 'left' }}>{colKey}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {value.map((item, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                        {Object.entries(item).map(([colKey, colValue]) => (
+                          <td key={colKey} style={{ padding: 10 }}>
+                            {typeof colValue === 'object' && colValue !== null ? 
+                              JSON.stringify(colValue) : 
+                              typeof colValue === 'number' ?
+                              colValue.toLocaleString('en-US', { maximumFractionDigits: 2 }) :
+                              String(colValue)
+                            }
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{whiteSpace: 'pre-wrap', background: '#f6f8fa', padding: 12, borderRadius: 6}}>
+                  <pre style={{ textAlign: 'left', fontSize: 14 }}>{JSON.stringify(value, null, 2)}</pre>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ color: '#666' }}>No data available</p>
+        </div>
+      )}
+
+      <Link to="/">
+        <button>Back</button>
+      </Link>
+      
+      <PageFooter />
+    </div>
+  )
+}
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  const appState = { count }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Home count={count} onIncrement={() => setCount((c) => c + 1)} />}
+      />
+      <Route
+        path="/application_state"
+        element={<WebSocketPage title="Application state" messageType="application_state" state={appState} />}
+      />
+      <Route
+        path="/application_state_details"
+        element={<ApplicationStateDetailsPage state={appState} />}
+      />
+      <Route
+        path="/application_config"
+        element={<WebSocketPage title="Application config" messageType="app_config" state={appState} />}
+      />
+      <Route
+        path="/open_positions"
+        element={<OpenPositionsPage state={appState} />}
+      />
+      <Route
+        path="/account_summary"
+        element={<AccountSummaryPage state={appState} />}
+      />
+    </Routes>
+  )
+}
+
+export default App
