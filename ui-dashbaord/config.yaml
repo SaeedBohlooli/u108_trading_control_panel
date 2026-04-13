@@ -1,0 +1,44 @@
+# Application Configuration File
+# This file provides default configuration values
+# Priority: .env variables > config.yaml > hardcoded defaults
+
+controled_app_config_path: '../../u107_level_driven_algo/configs'
+# Project identifier
+control_panel:
+  projectName: Control Panel G
+
+  # Server ports
+  ports:
+    vite: 7106
+
+  # WebSocket configuration
+  websocket:
+    url: ws://127.0.0.1:6107
+    reconnect:
+      initialDelay: 1000
+      maxDelay: 30000
+      backoffMultiplier: 2
+
+  # API configuration
+  api:
+    baseUrl: http://127.0.0.1:5107
+    endpoints:
+      sendRequest: /api/send-request
+
+  # Message types
+  messageTypes:
+    applicationState: application_state
+    appConfig: app_config
+
+  # Footer configuration
+  footer:
+    text: "Trading Control Panel Dashboard @ Zoitek.com   2014 - 2025 G "
+    link: "https://zoitek.com"
+
+  # Authentication
+  auth:
+    username: "username"
+    password: "password"
+
+  # Browser title
+  browserTitle: "Control Panel G"
