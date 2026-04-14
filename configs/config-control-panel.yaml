@@ -3,5 +3,5 @@ control_panel:
 
   # Server ports
   ports:
-    vite: 7106
-    control_panel_api_port: 5109
+    vite: 7106  # Vite development server port
+    control_panel_api_port: 5109 # Control Panel API server port
