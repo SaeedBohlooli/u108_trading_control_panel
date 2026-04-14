@@ -20,7 +20,7 @@ function OSCommandsPage() {
     setOutput(null)
 
     try {
-      const response = await fetch(`${appConfig.api?.baseUrl}/api/execute-command`, {
+      const response = await fetch(`${appConfig.api?.controlPanelUrl}/api/execute-command`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

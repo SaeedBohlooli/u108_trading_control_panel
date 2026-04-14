@@ -4,4 +4,4 @@ control_panel:
   # Server ports
   ports:
     vite: 7106
-    api: 5107
+    control_panel_api_port: 5109

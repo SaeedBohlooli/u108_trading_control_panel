@@ -93,7 +93,7 @@ function OpenPositionsPage() {
   const sendCloseRequestsWithDelay = async (closeOrders) => {
     for (let i = 0; i < closeOrders.length; i++) {
       try {
-        const response = await fetch(`${appConfig.api?.baseUrl}${appConfig.api?.endpoints?.sendRequest}`, {
+        const response = await fetch(`${appConfig.api?.tradingEngineAPI}${appConfig.api?.endpoints?.sendRequest}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -332,7 +332,7 @@ function OpenPositionsPage() {
                           }
                           console.log('Sending close order:', closeOrder)
                           
-                          fetch(`${appConfig.api?.baseUrl}${appConfig.api?.endpoints?.sendRequest}`, {
+                          fetch(`${appConfig.api?.tradingEngineAPI}${appConfig.api?.endpoints?.sendRequest}`, {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',

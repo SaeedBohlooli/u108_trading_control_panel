@@ -12,13 +12,13 @@ CORS(app)
 def load_config():
     """Load configuration from YAML file"""
     config_path = Path(__file__).parent.parent / 'configs' / 'config-control-panel.yaml'
-    default_port = 5107
+    default_port = 5109
     
     try:
         if config_path.exists():
             with open(config_path, 'r') as f:
                 config = yaml.safe_load(f)
-                port = config.get('control_panel', {}).get('ports', {}).get('api', default_port)
+                port = config.get('control_panel', {}).get('ports', {}).get('control_panel_api_port', default_port)
                 return port
     except Exception as e:
         print(f'Error loading config: {e}')
@@ -54,6 +54,8 @@ def execute_command():
                 'returnCode': 1
             }), 400
         
+        print(f'Executing command: {command}')
+        
         # Execute command
         result = subprocess.run(
             command,
@@ -63,10 +65,13 @@ def execute_command():
             timeout=30
         )
         
+        print(f'Command result - returnCode: {result.returncode}, stdout: {result.stdout}, stderr: {result.stderr}')
+        
         return jsonify({
             'stdout': result.stdout,
             'stderr': result.stderr,
-            'returnCode': result.returncode
+            'returnCode': result.returncode,
+            'command': command
         }), 200
         
     except subprocess.TimeoutExpired:
@@ -78,6 +83,7 @@ def execute_command():
         }), 408
         
     except Exception as e:
+        print(f'Error: {str(e)}')
         return jsonify({
             'error': str(e),
             'stdout': '',

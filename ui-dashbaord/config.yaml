@@ -21,7 +21,8 @@ control_panel:
 
   # API configuration
   api:
-    baseUrl: http://127.0.0.1:5107
+    tradingEngineAPI: http://127.0.0.1:5107
+    controlPanelUrl: http://127.0.0.1:5109
     endpoints:
       sendRequest: /api/send-request
 
