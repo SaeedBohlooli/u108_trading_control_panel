@@ -1,0 +1,78 @@
+import subprocess
+import json
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import os
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/api/execute-command', methods=['POST'])
+def execute_command():
+    """
+    Execute OS command and return output
+    
+    Request body:
+    {
+        "command": "ls -la"
+    }
+    
+    Response:
+    {
+        "stdout": "...",
+        "stderr": "...",
+        "returnCode": 0
+    }
+    """
+    try:
+        data = request.get_json()
+        command = data.get('command', '').strip()
+        
+        if not command:
+            return jsonify({
+                'error': 'No command provided',
+                'stdout': '',
+                'stderr': 'No command provided',
+                'returnCode': 1
+            }), 400
+        
+        # Execute command
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        return jsonify({
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'returnCode': result.returncode
+        }), 200
+        
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'error': 'Command execution timed out',
+            'stdout': '',
+            'stderr': 'Command execution timed out after 30 seconds',
+            'returnCode': -1
+        }), 408
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'stdout': '',
+            'stderr': str(e),
+            'returnCode': -1
+        }), 500
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    return jsonify({'status': 'ok'}), 200
+
+if __name__ == '__main__':
+    # Run on port 5107 (or configure as needed)
+    port = int(os.getenv('CONTROL_PANEL_API_PORT', 5107))
+    app.run(host='0.0.0.0', port=port, debug=True)

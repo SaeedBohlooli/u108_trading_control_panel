@@ -1,0 +1,7 @@
+control_panel:
+  projectName: Control Panel G
+
+  # Server ports
+  ports:
+    vite: 7106
+    api: 5107

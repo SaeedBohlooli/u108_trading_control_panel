@@ -174,17 +174,19 @@ function Home({ onLogout }) {
       <div style={{ marginBottom: 40 }}>
         <h2 style={{ fontSize: 20, marginBottom: 16, color: '#333' }}>Misc</h2>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <button style={{ 
-            padding: '12px 24px', 
-            fontSize: 16,
-            background: '#f59e42',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer'
-          }}>
-            Miscellaneous Action
-          </button>
+          <Link to="/os_commands">
+            <button style={{ 
+              padding: '12px 24px', 
+              fontSize: 16,
+              background: '#f59e42',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}>
+              OS Commands
+            </button>
+          </Link>
           <Link to="/edit_config">
             <button style={{ 
               padding: '12px 24px', 

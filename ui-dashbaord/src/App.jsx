@@ -10,6 +10,8 @@ import AccountSummaryPage from './pages/AccountSummaryPage'
 import ApplicationStateDetailsPage from './pages/ApplicationStateDetailsPage'
 import ConnectionConfigsPage from './pages/ConnectionConfigsPage'
 import SendOrderPage from './pages/SendOrderPage'
+import ExecuteCommandPage from './pages/ExecuteCommandPage'
+import OSCommandsPage from './pages/OSCommandsPage'
 import appConfig from './config/appConfig'
 
 function App() {
@@ -82,6 +84,14 @@ function App() {
       <Route
         path="/send_order"
         element={<SendOrderPage state={appState} />}
+      />
+      <Route
+        path="/execute_command"
+        element={<ExecuteCommandPage />}
+      />
+      <Route
+        path="/os_commands"
+        element={<OSCommandsPage />}
       />
       <Route path="/edit_config" element={<EditConfig />} />
       <Route path="*" element={<Navigate to="/" replace />} />
