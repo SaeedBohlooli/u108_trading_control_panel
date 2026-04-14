@@ -90,10 +90,21 @@ function OpenPositionsPage() {
     }))
   }
 
+  const getTradingEngineUrl = () => {
+    const configUrl = appConfig.api?.tradingEngineAPI || 'http://127.0.0.1:5107'
+    
+    // If UI is accessed from public IP and config says localhost, replace with current host
+    if (configUrl.includes('127.0.0.1') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return `http://${window.location.hostname}:5107`
+    }
+    
+    return configUrl
+  }
+
   const sendCloseRequestsWithDelay = async (closeOrders) => {
     for (let i = 0; i < closeOrders.length; i++) {
       try {
-        const response = await fetch(`${appConfig.api?.tradingEngineAPI}${appConfig.api?.endpoints?.sendRequest}`, {
+        const response = await fetch(`${getTradingEngineUrl()}${appConfig.api?.endpoints?.sendRequest}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -332,7 +343,7 @@ function OpenPositionsPage() {
                           }
                           console.log('Sending close order:', closeOrder)
                           
-                          fetch(`${appConfig.api?.tradingEngineAPI}${appConfig.api?.endpoints?.sendRequest}`, {
+                          fetch(`${getTradingEngineUrl()}${appConfig.api?.endpoints?.sendRequest}`, {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',
