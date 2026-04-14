@@ -7,7 +7,9 @@ import yaml
 from pathlib import Path
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS to allow requests from all origins (or specific origins)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 def load_config():
     """Load configuration from YAML file"""
