@@ -8,12 +8,14 @@ from pathlib import Path
 
 app = Flask(__name__)
 
-# Configure CORS to allow requests from all origins
+# Configure CORS properly
 CORS(app, 
-     resources={r"/api/*": {"origins": "*"}},
-     allow_headers=["Content-Type"],
-     methods=["GET", "POST", "OPTIONS"],
-     supports_credentials=True)
+     resources={r"/api/*": {
+         "origins": "*",
+         "methods": ["GET", "POST", "OPTIONS"],
+         "allow_headers": ["Content-Type", "Accept"],
+         "max_age": 3600
+     }})
 
 def load_config():
     """Load configuration from YAML file"""
@@ -107,9 +109,10 @@ def health():
 
 @app.after_request
 def after_request(response):
-    """Add headers to allow private network access"""
-    response.headers.add('Access-Control-Allow-Private-Network', 'true')
+    """Add CORS headers"""
     response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
 if __name__ == '__main__':
