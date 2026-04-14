@@ -20,7 +20,13 @@ function OSCommandsPage() {
     setOutput(null)
 
     try {
-      const response = await fetch(`${appConfig.api?.controlPanelUrl}/api/execute-command`, {
+      // Use controlPanelUrl instead of tradingEngineAPI for direct access
+      // But route through a proxy if needed
+      const apiUrl = `${appConfig.api?.controlPanelUrl}/api/execute-command`
+      
+      console.log('Calling API at:', apiUrl)
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

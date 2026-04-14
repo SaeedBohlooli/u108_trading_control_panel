@@ -31,7 +31,7 @@ def load_config():
     
     return default_port
 
-@app.route('/api/execute-command', methods=['POST'])
+@app.route('/api/execute-command', methods=['POST', 'OPTIONS'])
 def execute_command():
     """
     Execute OS command and return output
@@ -48,6 +48,9 @@ def execute_command():
         "returnCode": 0
     }
     """
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
         data = request.get_json()
         command = data.get('command', '').strip()
