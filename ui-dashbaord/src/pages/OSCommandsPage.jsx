@@ -9,6 +9,18 @@ function OSCommandsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // Helper function to get dynamic API URL
+  const getDynamicUrl = (configUrl) => {
+    if (!configUrl) return null
+    
+    if (configUrl.includes('127.0.0.1') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      const port = configUrl.split(':').pop()
+      return `http://${window.location.hostname}:${port}`
+    }
+    
+    return configUrl
+  }
+
   const handleExecute = async () => {
     if (!command.trim()) {
       setError('Please enter a command')
@@ -20,13 +32,15 @@ function OSCommandsPage() {
     setOutput(null)
 
     try {
-      // Use controlPanelUrl instead of tradingEngineAPI for direct access
-      // But route through a proxy if needed
-      const apiUrl = `${appConfig.api?.controlPanelUrl}/api/execute-command`
+      const apiUrl = getDynamicUrl(appConfig.api?.controlPanelUrl)
       
+      if (!apiUrl) {
+        throw new Error('Control Panel API URL not configured')
+      }
+
       console.log('Calling API at:', apiUrl)
       
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${apiUrl}/api/execute-command`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
