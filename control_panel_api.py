@@ -73,6 +73,6 @@ def health():
     return jsonify({'status': 'ok'}), 200
 
 if __name__ == '__main__':
-    # Run on port 5107 (or configure as needed)
-    port = int(os.getenv('CONTROL_PANEL_API_PORT', 5107))
+    # Run on port from environment variable
+    port = int(os.getenv('CONTROL_PANEL_API_PORT'))
     app.run(host='0.0.0.0', port=port, debug=True)

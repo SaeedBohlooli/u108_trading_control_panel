@@ -20,18 +20,21 @@ CORS(app,
 def load_config():
     """Load configuration from YAML file"""
     config_path = Path(__file__).parent.parent / 'configs' / 'config-control-panel.yaml'
-    default_port = 5109
     
     try:
         if config_path.exists():
             with open(config_path, 'r') as f:
                 config = yaml.safe_load(f)
-                port = config.get('control_panel', {}).get('ports', {}).get('control_panel_api_port', default_port)
-                return port
+                port = config.get('control_panel', {}).get('ports', {}).get('control_panel_api_port')
+                if port is not None:
+                    return port
+                else:
+                    raise ValueError('control_panel_api_port not found in config')
     except Exception as e:
         print(f'Error loading config: {e}')
+        raise
     
-    return default_port
+    raise FileNotFoundError(f'Config file not found: {config_path}')
 
 @app.route('/api/execute-command', methods=['POST', 'OPTIONS'])
 def execute_command():

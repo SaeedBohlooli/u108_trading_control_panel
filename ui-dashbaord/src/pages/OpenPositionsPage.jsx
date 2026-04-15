@@ -91,11 +91,13 @@ function OpenPositionsPage() {
   }
 
   const getTradingEngineUrl = () => {
-    const configUrl = appConfig.api?.tradingEngineAPI || 'http://127.0.0.1:5107'
+    const configUrl = appConfig.api?.tradingEngineAPI
     
     // If UI is accessed from public IP and config says localhost, replace with current host
-    if (configUrl.includes('127.0.0.1') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return `http://${window.location.hostname}:5107`
+    if (configUrl && configUrl.includes('127.0.0.1') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      const url = new URL(configUrl)
+      url.hostname = window.location.hostname
+      return url.toString()
     }
     
     return configUrl
