@@ -187,19 +187,6 @@ function Home({ onLogout }) {
               OS Commands
             </button>
           </Link>
-          <Link to="/edit_config">
-            <button style={{ 
-              padding: '12px 24px', 
-              fontSize: 16,
-              background: '#fbbf24',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer'
-            }}>
-              Edit Configs
-            </button>
-          </Link>
         </div>
       </div>
       <PageFooter />
