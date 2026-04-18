@@ -1,44 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import appConfig from '../config/appConfig'
+import { getTradingEngineHealthUrl, getControlPanelHealthUrl } from '../config/apiUrls'
 
 function ConnectionStatus() {
   const { status: wsStatus } = useWebSocket('application_state')
-  const [flaskStatus, setFlaskStatus] = useState('checking')
   const [cpApiStatus, setCpApiStatus] = useState('checking')
-
-  useEffect(() => {
-    const checkFlaskHealth = async () => {
-      try {
-        const healthUrl = `${appConfig.api.baseUrl}/api/health`
-        const response = await fetch(healthUrl, { 
-          method: 'GET',
-          signal: AbortSignal.timeout(3000) // 3 second timeout
-        })
-        
-        if (response.ok) {
-          setFlaskStatus('connected')
-        } else {
-          setFlaskStatus('error')
-        }
-      } catch (error) {
-        setFlaskStatus('disconnected')
-      }
-    }
-
-    // Check immediately
-    checkFlaskHealth()
-
-    // Check every 10 seconds
-    const interval = setInterval(checkFlaskHealth, 10000)
-
-    return () => clearInterval(interval)
-  }, [])
+  const [tradingEngineStatus, setTradingEngineStatus] = useState('checking')
+  const [cpApiHealthUrl, setCpApiHealthUrl] = useState('')
+  const [tradingEngineHealthUrl, setTradingEngineHealthUrl] = useState('')
 
   useEffect(() => {
     const checkCpApiHealth = async () => {
       try {
-        const healthUrl = `${appConfig.api.controlPanelUrl}/api/health`
+        const healthUrl = getControlPanelHealthUrl()
+        setCpApiHealthUrl(healthUrl)
         const response = await fetch(healthUrl, { 
           method: 'GET',
           signal: AbortSignal.timeout(3000) // 3 second timeout
@@ -59,6 +35,35 @@ function ConnectionStatus() {
 
     // Check every 10 seconds
     const interval = setInterval(checkCpApiHealth, 10000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const checkTradingEngineHealth = async () => {
+      try {
+        const healthUrl = getTradingEngineHealthUrl()
+        setTradingEngineHealthUrl(healthUrl)
+        const response = await fetch(healthUrl, { 
+          method: 'GET',
+          signal: AbortSignal.timeout(3000) // 3 second timeout
+        })
+        
+        if (response.ok) {
+          setTradingEngineStatus('connected')
+        } else {
+          setTradingEngineStatus('error')
+        }
+      } catch (error) {
+        setTradingEngineStatus('disconnected')
+      }
+    }
+
+    // Check immediately
+    checkTradingEngineHealth()
+
+    // Check every 10 seconds
+    const interval = setInterval(checkTradingEngineHealth, 10000)
 
     return () => clearInterval(interval)
   }, [])
@@ -104,7 +109,7 @@ function ConnectionStatus() {
       border: '1px solid #e5e7eb',
       fontSize: 13
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={`WebSocket: ${appConfig.websocketUrl || 'ws://127.0.0.1:5106'}`}>
         <div style={{
           width: 8,
           height: 8,
@@ -123,26 +128,7 @@ function ConnectionStatus() {
         background: '#e5e7eb'
       }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: getStatusColor(flaskStatus),
-          boxShadow: `0 0 8px ${getStatusColor(flaskStatus)}`
-        }} />
-        <span style={{ color: '#6b7280', fontWeight: 500 }}>
-          Flask API: <span style={{ color: '#1f2937' }}>{getStatusText(flaskStatus)}</span>
-        </span>
-      </div>
-
-      <div style={{
-        width: 1,
-        height: 20,
-        background: '#e5e7eb'
-      }} />
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={cpApiHealthUrl || 'Loading...'}>
         <div style={{
           width: 8,
           height: 8,
@@ -152,6 +138,25 @@ function ConnectionStatus() {
         }} />
         <span style={{ color: '#6b7280', fontWeight: 500 }}>
           CP API: <span style={{ color: '#1f2937' }}>{getStatusText(cpApiStatus)}</span>
+        </span>
+      </div>
+
+      <div style={{
+        width: 1,
+        height: 20,
+        background: '#e5e7eb'
+      }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={tradingEngineHealthUrl || 'Loading...'}>
+        <div style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: getStatusColor(tradingEngineStatus),
+          boxShadow: `0 0 8px ${getStatusColor(tradingEngineStatus)}`
+        }} />
+        <span style={{ color: '#6b7280', fontWeight: 500 }}>
+          Trading Engine: <span style={{ color: '#1f2937' }}>{getStatusText(tradingEngineStatus)}</span>
         </span>
       </div>
     </div>

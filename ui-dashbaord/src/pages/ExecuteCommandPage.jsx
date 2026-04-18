@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import PageFooter from '../components/PageFooter'
 import appConfig from '../config/appConfig'
+import { getExecuteCommandUrl } from '../config/apiUrls'
 
 function ExecuteCommandPage() {
   const [command, setCommand] = useState('')
@@ -21,7 +22,7 @@ function ExecuteCommandPage() {
     setOutput(null)
 
     try {
-      const response = await fetch(`${appConfig.api?.baseUrl}/api/execute-command`, {
+      const response = await fetch(getExecuteCommandUrl(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

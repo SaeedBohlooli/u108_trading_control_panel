@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader'
 import PageFooter from '../components/PageFooter'
 import appConfig from '../config/appConfig'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { getSendRequestUrl } from '../config/apiUrls'
 
 function OpenOrdersPage() {
   const { data: rawWsData, status, lastReceived, retryCount, retryTimeout, reconnect } = useWebSocket('application_state')
@@ -90,7 +91,7 @@ function OpenOrdersPage() {
             }
             console.log('Sending cancel all order:', cancelAllOrder)
             
-            fetch(`${appConfig.api?.baseUrl}${appConfig.api?.endpoints?.sendRequest}`, {
+            fetch(getSendRequestUrl(), {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ function OpenOrdersPage() {
                       }
                       console.log('Sending cancel order:', cancelOrder)
                       
-                      fetch(`${appConfig.api?.baseUrl}${appConfig.api?.endpoints?.sendRequest}`, {
+                      fetch(`${appConfig.api?.tradingEngineAPI}${appConfig.api?.endpoints?.sendRequest}`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',

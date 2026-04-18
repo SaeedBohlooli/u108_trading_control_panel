@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import PageFooter from '../components/PageFooter'
 import appConfig from '../config/appConfig'
+import { getSendRequestUrl } from '../config/apiUrls'
 
 function SendOrderPage() {
   const [symbol, setSymbol] = useState('')
@@ -61,7 +62,7 @@ function SendOrderPage() {
 
     console.log('Sending order:', orderData)
 
-    fetch(`${appConfig.api?.baseUrl}${appConfig.api?.endpoints?.sendRequest}`, {
+    fetch(getSendRequestUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

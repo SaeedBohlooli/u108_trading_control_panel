@@ -5,85 +5,90 @@ import fs from 'fs'
 import path from 'path'
 import yamlParser from 'js-yaml'
 
-// Load config.yaml to get the port
-// Priority: controled_app_config_path > ../../configs/config-control-panel.yaml (project) > ./config.yaml (general) > default
-let vitePort = 7106 // default
+// Config file paths
+const masterConfigPath = path.resolve(__dirname, './config-master.yaml')
+const defaultConfigPath = path.resolve(__dirname, './config-default.yaml')
+
+let vitePort = 7106  // default port
 let loadedConfigData = null
 let loadedConfigSource = 'none'
-const projectConfigPath = path.resolve(__dirname, '../../configs/config-control-panel.yaml')
-const generalConfigPath = path.resolve(__dirname, './config.yaml')
 
+// Load config at startup (priority: project file from master → default config)
 try {
-  let configFile
-  let configPath = null
+  console.log('\n========== Config Loader Start ==========')
+  console.log(`Master config path: ${masterConfigPath}`)
+  console.log(`Master config exists: ${fs.existsSync(masterConfigPath)}`)
   
-  console.log('\n========== VITE CONFIG STARTUP ==========')
-  console.log('[STARTUP] __dirname:', __dirname)
-  console.log('[STARTUP] generalConfigPath:', generalConfigPath)
-  
-  // First, try to load general config to check for controled_app_config_path
-  let generalConfig = null
-  if (fs.existsSync(generalConfigPath)) {
-    configFile = fs.readFileSync(generalConfigPath, 'utf8')
-    generalConfig = yamlParser.load(configFile)
-    console.log('[STARTUP] ✓ Loaded general config from:', generalConfigPath)
-    console.log('[STARTUP] generalConfig.controled_app_config_path =', generalConfig.controled_app_config_path)
+  // Read master config to get project file path
+  let masterConfig = null
+  if (fs.existsSync(masterConfigPath)) {
+    masterConfig = yamlParser.load(fs.readFileSync(masterConfigPath, 'utf8'))
+    console.log('✓ Master config loaded')
+    console.log(`Master config content:`, JSON.stringify(masterConfig, null, 2))
   } else {
-    console.log('[STARTUP] ✗ General config NOT found at:', generalConfigPath)
+    console.log('✗ Master config NOT found')
   }
   
-  // Check if controled_app_config_path is set and file exists
-  if (generalConfig?.controled_app_config_path) {
-    const customConfigPath = path.resolve(__dirname, generalConfig.controled_app_config_path, 'config-control-panel.yaml')
-    console.log('[STARTUP] Checking controled_app_config_path...')
-    console.log('[STARTUP]   Raw path from config:', generalConfig.controled_app_config_path)
-    console.log('[STARTUP]   __dirname:', __dirname)
-    console.log('[STARTUP]   Resolved absolute path:', customConfigPath)
-    console.log('[STARTUP]   File exists:', fs.existsSync(customConfigPath))
+  // Check if project config file exists
+  console.log(`\nDEBUG: masterConfig keys:`, Object.keys(masterConfig || {}))
+  console.log(`DEBUG: controled_app_config_file value:`, masterConfig?.controled_app_config_file)
+  
+  if (masterConfig?.controled_app_config_file) {
+    const rawPath = masterConfig.controled_app_config_file
+    console.log(`\n✓ Found controled_app_config_file: "${rawPath}"`)
+    console.log(`  (length: ${rawPath.length}, type: ${typeof rawPath})`)
     
-    if (fs.existsSync(customConfigPath)) {
+    const projectConfigPath = path.resolve(__dirname, rawPath)
+    console.log(`Resolved project config path: ${projectConfigPath}`)
+    console.log(`Project config exists: ${fs.existsSync(projectConfigPath)}`)
+    
+    if (fs.existsSync(projectConfigPath)) {
       try {
-        configFile = fs.readFileSync(customConfigPath, 'utf8')
-        loadedConfigData = yamlParser.load(configFile)
-        loadedConfigSource = 'controled_path'
-        console.log('✓✓✓ SUCCESSFULLY LOADED config from controled_app_config_path:', customConfigPath)
-        console.log('✓✓✓ Loaded projectName:', loadedConfigData?.control_panel?.projectName)
-        console.log('✓✓✓ Loaded footer:', loadedConfigData?.control_panel?.footer?.text)
-      } catch (e) {
-        console.log('✗ Error parsing custom config:', e.message)
+        loadedConfigData = yamlParser.load(fs.readFileSync(projectConfigPath, 'utf8'))
+        loadedConfigSource = 'project'
+        console.log('✓✓ PROJECT CONFIG LOADED SUCCESSFULLY')
+        console.log(`Loaded from: ${projectConfigPath}`)
+      } catch (parseError) {
+        console.error('✗ Error parsing project config:', parseError.message)
       }
     } else {
-      console.log('✗ File NOT found at:', customConfigPath)
-      console.log('✗ Actual directory exists:', fs.existsSync(path.dirname(customConfigPath)))
-      if (fs.existsSync(path.dirname(customConfigPath))) {
-        console.log('✗ Files in that directory:', fs.readdirSync(path.dirname(customConfigPath)))
-      }
+      console.log('✗ Project config file NOT found at:', projectConfigPath)
     }
   } else {
-    console.log('[STARTUP] ✗ No controled_app_config_path set')
+    console.log('✗ No controled_app_config_file in master config')
+    console.log(`Master config is:`, masterConfig)
   }
   
-  // Fall back to project config
-  if (!loadedConfigData && fs.existsSync(projectConfigPath)) {
-    configFile = fs.readFileSync(projectConfigPath, 'utf8')
-    loadedConfigData = yamlParser.load(configFile)
-    loadedConfigSource = 'project'
-    console.log('Using project config from ../../configs/config-control-panel.yaml')
-  }
-  
-  // Fall back to general config
-  if (!loadedConfigData && fs.existsSync(generalConfigPath)) {
-    configFile = fs.readFileSync(generalConfigPath, 'utf8')
-    loadedConfigData = yamlParser.load(configFile)
-    loadedConfigSource = 'general'
-    console.log('Using general config from ./config.yaml')
+  // Only fall back to default if project config was NOT loaded
+  if (!loadedConfigData || loadedConfigSource === 'none') {
+    console.log(`\nDefault config path: ${defaultConfigPath}`)
+    console.log(`Default config exists: ${fs.existsSync(defaultConfigPath)}`)
+    
+    if (fs.existsSync(defaultConfigPath)) {
+      loadedConfigData = yamlParser.load(fs.readFileSync(defaultConfigPath, 'utf8'))
+      loadedConfigSource = 'default'
+      console.log('✓ DEFAULT CONFIG LOADED')
+      console.log(`Loaded from: ${defaultConfigPath}`)
+    } else {
+      console.log('✗ Default config file NOT found')
+    }
   }
   
   if (loadedConfigData) {
     vitePort = loadedConfigData?.control_panel?.ports?.vite || 7106
+    console.log(`\n========== Config Loaded Successfully ==========`)
+    console.log(`Source: ${loadedConfigSource}`)
+    console.log(`Port: ${vitePort}`)
+    console.log(`Project Name: ${loadedConfigData?.control_panel?.projectName}`)
+    console.log(`\n✓ CONFIG DATA:`)
+    console.log(JSON.stringify(loadedConfigData, null, 2))
+  } else {
+    console.log('\n✗ NO CONFIG LOADED - WILL USE DEFAULTS')
   }
+  console.log('==========================================\n')
 } catch (e) {
-  console.log('Could not load config, using default port 7106:', e.message)
+  console.error('Config Loader Error:', e.message)
+  console.log('Using defaults (port 7106)')
 }
 
 // https://vite.dev/config/
@@ -91,51 +96,71 @@ export default defineConfig({
   plugins: [
     react(), 
     yaml(),
-    // Custom plugin to serve config via API
+    // Serve config via API
     {
       name: 'config-server',
       configureServer(server) {
         server.middlewares.use('/api/config', (req, res) => {
+          console.log('\n========== API /config Request ==========')
           res.setHeader('Content-Type', 'application/json')
+          
           let configData = null
           let source = 'none'
           
-          // First, try to load general config to check for controled_app_config_path
-          let generalConfig = null
-          if (fs.existsSync(generalConfigPath)) {
-            const generalConfigFile = fs.readFileSync(generalConfigPath, 'utf8')
-            generalConfig = yamlParser.load(generalConfigFile)
+          // Load config (same priority: project → default)
+          let masterConfig = null
+          console.log(`Master config path: ${masterConfigPath}`)
+          console.log(`Master config exists: ${fs.existsSync(masterConfigPath)}`)
+          
+          if (fs.existsSync(masterConfigPath)) {
+            masterConfig = yamlParser.load(fs.readFileSync(masterConfigPath, 'utf8'))
+            console.log('✓ Master config loaded')
+            console.log(`Master config:`, JSON.stringify(masterConfig, null, 2))
           }
           
-          // Check if controled_app_config_path is set and file exists
-          if (generalConfig?.controled_app_config_path) {
-            const customConfigPath = path.resolve(__dirname, generalConfig.controled_app_config_path, 'config-control-panel.yaml')
-            console.log('[API /config] Checking controled_app_config_path:', generalConfig.controled_app_config_path)
-            console.log('[API /config] Resolved path:', customConfigPath)
-            console.log('[API /config] File exists:', fs.existsSync(customConfigPath))
-            if (fs.existsSync(customConfigPath)) {
-              const customConfigFile = fs.readFileSync(customConfigPath, 'utf8')
-              configData = yamlParser.load(customConfigFile)
-              source = 'controled_path'
-              console.log('[API /config] ✓ LOADED from controled_app_config_path:', customConfigPath)
+          // Check if project config file exists
+          console.log(`\nDEBUG: masterConfig keys:`, Object.keys(masterConfig || {}))
+          console.log(`DEBUG: controled_app_config_file value:`, masterConfig?.controled_app_config_file)
+          
+          if (masterConfig?.controled_app_config_file) {
+            const rawPath = masterConfig.controled_app_config_file
+            console.log(`\n✓ Found controled_app_config_file: "${rawPath}"`)
+            const projectConfigPath = path.resolve(__dirname, rawPath)
+            console.log(`Resolved project config path: ${projectConfigPath}`)
+            console.log(`Project config exists: ${fs.existsSync(projectConfigPath)}`)
+            
+            if (fs.existsSync(projectConfigPath)) {
+              try {
+                configData = yamlParser.load(fs.readFileSync(projectConfigPath, 'utf8'))
+                source = 'project'
+                console.log('✓✓ PROJECT CONFIG LOADED SUCCESSFULLY')
+                console.log(`Loaded from: ${projectConfigPath}`)
+              } catch (parseError) {
+                console.error('✗ Error parsing project config:', parseError.message)
+              }
             } else {
-              console.log('[API /config] ✗ File not found at:', customConfigPath)
+              console.log('✗ Project config file NOT found at:', projectConfigPath)
+            }
+          } else {
+            console.log('✗ No controled_app_config_file in master config')
+          }
+          
+          // Only fall back to default if project config was NOT loaded
+          if (!configData || source === 'none') {
+            console.log(`\nDefault config path: ${defaultConfigPath}`)
+            console.log(`Default config exists: ${fs.existsSync(defaultConfigPath)}`)
+            
+            if (fs.existsSync(defaultConfigPath)) {
+              configData = yamlParser.load(fs.readFileSync(defaultConfigPath, 'utf8'))
+              source = 'default'
+              console.log('✓ DEFAULT CONFIG LOADED')
+              console.log(`Loaded from: ${defaultConfigPath}`)
+            } else {
+              console.log('✗ Default config file NOT found')
             }
           }
           
-          // Fall back to project config
-          if (!configData && fs.existsSync(projectConfigPath)) {
-            const configFile = fs.readFileSync(projectConfigPath, 'utf8')
-            configData = yamlParser.load(configFile)
-            source = 'project'
-          }
-          
-          // Fall back to general config
-          if (!configData && fs.existsSync(generalConfigPath)) {
-            const configFile = fs.readFileSync(generalConfigPath, 'utf8')
-            configData = yamlParser.load(configFile)
-            source = 'general'
-          }
+          console.log(`\n========== Responding with ${source.toUpperCase()} config ==========\n`)
           
           res.end(JSON.stringify({
             config: configData?.control_panel || null,
@@ -147,6 +172,6 @@ export default defineConfig({
   ],
   server: {
     port: vitePort,
-    strictPort: true,
+    strictPort: true
   }
 })

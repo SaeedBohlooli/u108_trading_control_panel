@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader'
 import PageFooter from '../components/PageFooter'
 import appConfig from '../config/appConfig'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { getTradingEngineUrl, getSendRequestUrl } from '../config/apiUrls'
 
 function OpenPositionsPage() {
   const { data: wsData, status, lastReceived, retryCount, retryTimeout, reconnect } = useWebSocket('application_state')
@@ -90,23 +91,10 @@ function OpenPositionsPage() {
     }))
   }
 
-  const getTradingEngineUrl = () => {
-    const configUrl = appConfig.api?.tradingEngineAPI
-    
-    // If UI is accessed from public IP and config says localhost, replace with current host
-    if (configUrl && configUrl.includes('127.0.0.1') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      const url = new URL(configUrl)
-      url.hostname = window.location.hostname
-      return url.toString()
-    }
-    
-    return configUrl
-  }
-
   const sendCloseRequestsWithDelay = async (closeOrders) => {
     for (let i = 0; i < closeOrders.length; i++) {
       try {
-        const response = await fetch(`${getTradingEngineUrl()}${appConfig.api?.endpoints?.sendRequest}`, {
+        const response = await fetch(getSendRequestUrl(), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -201,7 +189,7 @@ function OpenPositionsPage() {
             }
             console.log('Sending close all order:', closeAllOrder)
             
-            fetch(`${appConfig.api?.baseUrl}${appConfig.api?.endpoints?.sendRequest}`, {
+            fetch(getSendRequestUrl(), {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -345,7 +333,7 @@ function OpenPositionsPage() {
                           }
                           console.log('Sending close order:', closeOrder)
                           
-                          fetch(`${getTradingEngineUrl()}${appConfig.api?.endpoints?.sendRequest}`, {
+                          fetch(getSendRequestUrl(), {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',
