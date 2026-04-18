@@ -52,22 +52,32 @@ function fixUrl(urlString) {
 function fixWebSocketUrl(wsUrl) {
   if (!wsUrl) return wsUrl
   try {
+    console.log(`fixWebSocketUrl input: "${wsUrl}"`)
     // Parse as URL by converting ws:// to http://
     const wsProtocol = wsUrl.startsWith('wss://') ? 'wss://' : 'ws://'
     const httpsUrl = wsUrl.replace(/^wss?:\/\//, 'https://')
+    console.log(`  Protocol: ${wsProtocol}, temp URL: ${httpsUrl}`)
+    
     const url = new URL(httpsUrl)
     const currentHost = window.location.hostname
+    console.log(`  Current hostname: ${currentHost}`)
+    console.log(`  Parsed hostname: ${url.hostname}, port: ${url.port}`)
+    
     const isLocalhost = url.hostname === '127.0.0.1' || url.hostname === 'localhost' || url.hostname === '0.0.0.0'
+    console.log(`  Is localhost: ${isLocalhost}`)
     
     // If config says localhost but we're on different host, use current hostname
     if (isLocalhost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
       const port = url.port ? `:${url.port}` : ''
       const newUrl = `${wsProtocol}//${currentHost}${port}`
-      console.log(`WebSocket URL patched: ${wsUrl} → ${newUrl}`)
+      console.log(`  ✓ WebSocket URL patched: ${wsUrl} → ${newUrl}`)
       return newUrl
+    } else {
+      console.log(`  ✗ No patching needed, returning: ${wsUrl}`)
     }
   } catch (e) {
     // Not a valid URL, return as-is
+    console.error(`  Error parsing WebSocket URL "${wsUrl}":`, e.message)
   }
   return wsUrl
 }
