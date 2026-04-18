@@ -109,7 +109,7 @@ function ConnectionStatus() {
       border: '1px solid #e5e7eb',
       fontSize: 13
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={`WebSocket: ${appConfig.websocketUrl || 'ws://127.0.0.1:5106'}`}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={`WebSocket: ${appConfig.websocket?.url}`}>
         <div style={{
           width: 8,
           height: 8,
