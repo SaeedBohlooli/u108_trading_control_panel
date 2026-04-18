@@ -32,9 +32,11 @@ function fixUrl(urlString) {
     
     // If config says localhost but we're on different host, use current hostname
     if (isLocalhost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-      console.log(`URL patched: ${urlString} → ${currentHost}`)
-      url.hostname = currentHost
-      return url.toString()
+      const port = url.port ? `:${url.port}` : ''
+      const protocol = url.protocol
+      const newUrl = `${protocol}//${currentHost}${port}`
+      console.log(`URL patched: ${urlString} → ${newUrl}`)
+      return newUrl
     }
   } catch (e) {
     // Not a valid URL, return as-is

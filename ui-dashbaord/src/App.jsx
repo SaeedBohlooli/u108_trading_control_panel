@@ -93,11 +93,9 @@ function App() {
         path="/os_commands"
         element={<OSCommandsPage />}
       />
-      <Route path="/edit_config" element={<EditConfig />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
 
-import EditConfig from './pages/EditConfig.jsx'
 export default App

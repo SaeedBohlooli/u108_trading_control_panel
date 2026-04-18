@@ -1,8 +1,8 @@
 import appConfig from '../config/appConfig'
 
 function PageFooter() {
-  const footerText = appConfig.footer?.text || 'Trading Control Panel Dashboard @ Zoitek.com   2014 - 2025'
-  const footerLink = appConfig.footer?.link || 'https://zoitek.com'
+  const footerText = appConfig.footer?.text
+  const footerLink = appConfig.footer?.link
 
   return (
     <footer style={{ 
