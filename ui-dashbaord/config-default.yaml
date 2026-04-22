@@ -6,7 +6,7 @@ control_panel:
 
   # Ports
   ports:
-    vite: 7106
+    vite: 7109
 
   # WebSocket
   websocket:

@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader'
 import PageFooter from '../components/PageFooter'
 import appConfig from '../config/appConfig'
 import { useWebSocket } from '../hooks/useWebSocket'
-import { getTradingEngineUrl, getSendRequestUrl } from '../config/apiUrls'
+import { getTradingEngineUrl,   } from '../config/apiUrls'
 
 function OpenPositionsPage() {
   const { data: wsData, status, lastReceived, retryCount, retryTimeout, reconnect } = useWebSocket('application_state')

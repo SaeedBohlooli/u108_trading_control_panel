@@ -12,6 +12,7 @@ import ConnectionConfigsPage from './pages/ConnectionConfigsPage'
 import SendOrderPage from './pages/SendOrderPage'
 import ExecuteCommandPage from './pages/ExecuteCommandPage'
 import OSCommandsPage from './pages/OSCommandsPage'
+import StreamsPage from './pages/StreamsPage'
 import appConfig from './config/appConfig'
 
 function App() {
@@ -92,6 +93,10 @@ function App() {
       <Route
         path="/os_commands"
         element={<OSCommandsPage />}
+      />
+      <Route
+        path="/streams"
+        element={<StreamsPage />}
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
